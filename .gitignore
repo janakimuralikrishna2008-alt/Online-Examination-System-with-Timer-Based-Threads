@@ -1,0 +1,11 @@
+target/
+bin/
+bin-test/
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+.idea/
+.vscode/
