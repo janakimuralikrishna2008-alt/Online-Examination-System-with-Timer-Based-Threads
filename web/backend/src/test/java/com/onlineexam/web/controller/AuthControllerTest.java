@@ -30,7 +30,7 @@ class AuthControllerTest {
                 "OnlineExamSecretKeyForJwtSigningMustBeAtLeast256BitsLongForHmacSha256!",
                 86400000L
         );
-        authController = new AuthController(authService, tokenProvider);
+        authController = new AuthController(authService, tokenProvider, "ADMIN-EXAM-SECURE-2026");
     }
 
     @Test

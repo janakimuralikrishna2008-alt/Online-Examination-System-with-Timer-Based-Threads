@@ -78,9 +78,16 @@ public final class DatabaseConfig {
         if (runtimeUrl != null && !runtimeUrl.isBlank()) {
             return runtimeUrl;
         }
-        String envUrl = System.getenv("DB_URL");
-        if (envUrl != null && !envUrl.isBlank()) {
-            return envUrl;
+        // Support standard cloud provider environment variables
+        for (String varName : new String[]{"DB_URL", "DATABASE_URL", "SPRING_DATASOURCE_URL", "MYSQL_URL"}) {
+            String val = System.getenv(varName);
+            if (val != null && !val.isBlank()) {
+                val = val.trim();
+                if (val.startsWith("mysql://")) {
+                    val = "jdbc:" + val;
+                }
+                return val;
+            }
         }
         return properties.getProperty("db.url", "jdbc:mysql://localhost:3306/online_exam_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC");
     }
@@ -89,9 +96,11 @@ public final class DatabaseConfig {
         if (runtimeUser != null && !runtimeUser.isBlank()) {
             return runtimeUser;
         }
-        String envUser = System.getenv("DB_USER");
-        if (envUser != null && !envUser.isBlank()) {
-            return envUser;
+        for (String varName : new String[]{"DB_USER", "DATABASE_USERNAME", "MYSQL_USER", "SPRING_DATASOURCE_USERNAME"}) {
+            String val = System.getenv(varName);
+            if (val != null && !val.isBlank()) {
+                return val.trim();
+            }
         }
         return properties.getProperty("db.user", "root");
     }
@@ -100,9 +109,11 @@ public final class DatabaseConfig {
         if (runtimePassword != null) {
             return runtimePassword;
         }
-        String envPass = System.getenv("DB_PASSWORD");
-        if (envPass != null) {
-            return envPass;
+        for (String varName : new String[]{"DB_PASSWORD", "DATABASE_PASSWORD", "MYSQL_PASSWORD", "SPRING_DATASOURCE_PASSWORD"}) {
+            String val = System.getenv(varName);
+            if (val != null) {
+                return val;
+            }
         }
         return properties.getProperty("db.password", "");
     }

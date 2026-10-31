@@ -28,15 +28,15 @@ public class AuthController {
     public AuthController(
             AuthService authService,
             JwtTokenProvider tokenProvider,
-            @Value("${admin.invitation-code:ADMIN-EXAM-SECURE-2026}") String adminInvitationCode
+            @Value("${admin.invitation-code:}") String adminInvitationCode
     ) {
         this.authService = authService;
         this.tokenProvider = tokenProvider;
-        this.adminInvitationCode = adminInvitationCode;
+        this.adminInvitationCode = adminInvitationCode != null ? adminInvitationCode.trim() : "";
     }
 
     public AuthController(AuthService authService, JwtTokenProvider tokenProvider) {
-        this(authService, tokenProvider, "ADMIN-EXAM-SECURE-2026");
+        this(authService, tokenProvider, "");
     }
 
     @PostMapping("/login")
@@ -96,7 +96,13 @@ public class AuthController {
 
     @PostMapping("/register/admin")
     public ResponseEntity<?> registerAdmin(@Valid @RequestBody AdminRegisterRequest request) {
-        if (request.invitationCode() == null || !request.invitationCode().trim().equals(adminInvitationCode.trim())) {
+        if (adminInvitationCode.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Registration Disabled",
+                                 "message", "Administrator registration is disabled because no ADMIN_INVITATION_CODE is configured on the server."));
+        }
+
+        if (request.invitationCode() == null || !request.invitationCode().trim().equals(adminInvitationCode)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Invalid Invitation Code", "message", "The admin invitation code provided is invalid or has expired."));
         }

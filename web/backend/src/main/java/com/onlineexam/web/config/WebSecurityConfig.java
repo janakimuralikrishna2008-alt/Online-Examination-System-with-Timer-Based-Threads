@@ -2,6 +2,7 @@ package com.onlineexam.web.config;
 
 import com.onlineexam.web.security.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,6 +16,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,6 +28,9 @@ import java.util.List;
 public class WebSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Value("${cors.allowed-origins:}")
+    private String configuredAllowedOrigins;
 
     public WebSecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
@@ -57,7 +62,30 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+
+        List<String> originPatterns = new ArrayList<>(List.of(
+                "http://localhost:*",
+                "http://127.0.0.1:*",
+                "https://*.pages.dev",
+                "https://*.onrender.com"
+        ));
+
+        // Read custom origins from environment variable or properties file
+        String customOrigins = System.getenv("CORS_ALLOWED_ORIGINS");
+        if (customOrigins == null || customOrigins.isBlank()) {
+            customOrigins = configuredAllowedOrigins;
+        }
+
+        if (customOrigins != null && !customOrigins.isBlank()) {
+            for (String origin : customOrigins.split(",")) {
+                String trimmed = origin.trim();
+                if (!trimmed.isEmpty() && !originPatterns.contains(trimmed)) {
+                    originPatterns.add(trimmed);
+                }
+            }
+        }
+
+        config.setAllowedOriginPatterns(originPatterns);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
         config.setAllowCredentials(true);

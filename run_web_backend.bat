@@ -30,9 +30,9 @@ if "%MAVEN_OPTS%"=="" (
     set "MAVEN_OPTS=-Xmx384m -XX:+UseSerialGC"
 )
 
-:: Set default DB_PASSWORD if not already set in environment
-if "%DB_PASSWORD%"=="" (
-    set DB_PASSWORD=2005
+:: Database password can be supplied via environment variable; defaults to empty for local MySQL
+if not defined DB_PASSWORD (
+    set "DB_PASSWORD="
 )
 
 :: Check if port 8080 is already listening

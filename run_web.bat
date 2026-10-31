@@ -8,9 +8,9 @@ echo Launching Full Web Platform (Frontend + Backend)
 echo ========================================================
 echo.
 
-:: Set default DB_PASSWORD if not already set in environment
-if "%DB_PASSWORD%"=="" (
-    set DB_PASSWORD=2005
+:: Database password can be supplied via environment variable; defaults to empty for local MySQL
+if not defined DB_PASSWORD (
+    set "DB_PASSWORD="
 )
 
 :: 1. Start Backend in separate window

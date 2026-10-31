@@ -1,0 +1,15 @@
+**/.git
+**/node_modules
+**/target
+**/dist
+**/.idea
+**/*.log
+web/frontend/node_modules
+web/frontend/dist
+.agent
+.agents
+.cursor
+.gemini
+.codex
+.impeccable
+

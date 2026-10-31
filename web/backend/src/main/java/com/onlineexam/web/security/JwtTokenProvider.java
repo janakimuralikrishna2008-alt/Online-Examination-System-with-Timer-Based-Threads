@@ -24,9 +24,24 @@ public class JwtTokenProvider {
     private final long expirationMs;
 
     public JwtTokenProvider(
-            @Value("${jwt.secret:OnlineExamSecretKeyForJwtSigningMustBeAtLeast256BitsLongForHmacSha256!}") String secret,
+            @Value("${jwt.secret:}") String secret,
             @Value("${jwt.expiration-ms:86400000}") long expirationMs) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        if (secret != null && !secret.trim().isEmpty()) {
+            byte[] bytes = secret.trim().getBytes(StandardCharsets.UTF_8);
+            if (bytes.length < 32) {
+                // Pad to 32 bytes using SHA-256 for backward compatibility with short development secrets
+                try {
+                    java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+                    bytes = md.digest(bytes);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Failed to initialize secret key", e);
+                }
+            }
+            this.key = Keys.hmacShaKeyFor(bytes);
+        } else {
+            LOGGER.warning("JWT_SECRET environment variable is not configured. An ephemeral HMAC-SHA256 key was generated for this session.");
+            this.key = Jwts.SIG.HS256.key().build();
+        }
         this.expirationMs = expirationMs;
     }
 
