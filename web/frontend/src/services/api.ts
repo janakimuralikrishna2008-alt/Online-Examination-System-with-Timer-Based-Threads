@@ -24,6 +24,10 @@ const resolveApiBaseUrl = (): string => {
     const trimmed = rawEnvUrl.trim().replace(/\/+$/, '');
     return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
   }
+  // In production builds, default to the live Render backend rather than localhost
+  if (import.meta.env.PROD) {
+    return 'https://online-examination-backend-t146.onrender.com/api';
+  }
   return 'http://127.0.0.1:8080/api';
 };
 
