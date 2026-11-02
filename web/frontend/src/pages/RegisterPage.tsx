@@ -135,7 +135,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ mode }) => {
       } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
         setError('Connection timed out. Please check that the backend server is running on port 8080.');
       } else {
-        setError('Cannot connect to backend server at http://127.0.0.1:8080. Ensure the service is active.');
+        setError('Cannot connect to backend server. Please ensure the backend service is active and accessible.');
       }
     } finally {
       setSubmitting(false);

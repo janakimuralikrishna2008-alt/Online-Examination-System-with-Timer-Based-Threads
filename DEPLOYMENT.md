@@ -45,23 +45,13 @@ Before deploying, ensure you have:
 
 ---
 
-## Step 1: Database Initialization
+## Step 1: All-in-One Docker Architecture (₹0 Demo on Render)
 
-1. Obtain your cloud MySQL connection parameters:
-   - **Host** (e.g. `mysql-xxxx.aivencloud.com`)
-   - **Port** (e.g. `3306` or cloud port)
-   - **Database Name** (e.g. `online_exam_db`)
-   - **Username** (e.g. `avnadmin` or `root`)
-   - **Password**
-
-2. Connect to your database using MySQL Workbench, DBeaver, or the MySQL CLI:
-   ```bash
-   mysql -h <host> -P <port> -u <user> -p <database_name>
-   ```
-
-3. Run the database setup scripts in sequence:
-   - [`database/schema.sql`](database/schema.sql) — Initializes core tables (`users`, `subjects`, `topics`, `study_materials`, `exams`, `questions`, `student_exams`, `student_answers`).
-   - [`database/migration_v2.sql`](database/migration_v2.sql) — Sets up learning platform enhancements and seed data.
+The backend and MySQL run inside a single optimized container on Render's Free tier ($0/month):
+- **Base OS**: Eclipse Adoptium OpenJDK 21 LTS + MySQL Server 8.
+- **Embedded Configuration**: [`database/low-memory-my.cnf`](database/low-memory-my.cnf) disables Performance Schema and optimizes buffer pools to operate under 135 MB RAM.
+- **Spring Boot Memory**: Tuned to 220 MB heap via `-Xmx220m -XX:+UseSerialGC -XX:TieredStopAtLevel=1`.
+- **Database Startup**: Handled automatically by [`docker-entrypoint.sh`](docker-entrypoint.sh), which waits for MySQL readiness on `127.0.0.1:3306`, provisions dynamic credentials, runs [`database/production_schema.sql`](database/production_schema.sql), and boots Spring Boot on Render's dynamic `$PORT`.
 
 ---
 

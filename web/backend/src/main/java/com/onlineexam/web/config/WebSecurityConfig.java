@@ -67,7 +67,9 @@ public class WebSecurityConfig {
                 "http://localhost:*",
                 "http://127.0.0.1:*",
                 "https://*.pages.dev",
-                "https://*.onrender.com"
+                "https://*.onrender.com",
+                "https://*.vercel.app",
+                "https://online-examination-system-with-time.vercel.app"
         ));
 
         // Read custom origins from environment variable or properties file

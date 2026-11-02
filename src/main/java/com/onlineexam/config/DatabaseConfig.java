@@ -86,6 +86,11 @@ public final class DatabaseConfig {
                 if (val.startsWith("mysql://")) {
                     val = "jdbc:" + val;
                 }
+                // Ensure cloud connections enforce secure TLS/SSL and proper timezone handling
+                if (val.startsWith("jdbc:mysql://") && !val.contains("sslMode=") && !val.contains("useSSL=")) {
+                    String separator = val.contains("?") ? "&" : "?";
+                    val = val + separator + "sslMode=REQUIRED&serverTimezone=UTC";
+                }
                 return val;
             }
         }

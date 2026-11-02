@@ -1,0 +1,34 @@
+[mysqld]
+# ===================================================================
+# Ultra-low memory configuration for 512 MB Render Free Tier
+# ===================================================================
+
+# Disable Performance Schema to save ~150-200MB RAM
+performance_schema = OFF
+
+# InnoDB memory tuning (default is 128M - reduce to 24M for demo workloads)
+innodb_buffer_pool_size = 24M
+innodb_log_buffer_size = 4M
+innodb_redo_log_capacity = 16M
+innodb_open_files = 100
+
+# Connection memory limits
+max_connections = 15
+table_open_cache = 64
+table_definition_cache = 128
+thread_cache_size = 2
+
+# Per-connection buffers
+sort_buffer_size = 256K
+read_buffer_size = 128K
+read_rnd_buffer_size = 256K
+join_buffer_size = 256K
+binlog_cache_size = 32K
+
+# Disable binlog writing if not replicating
+disable_log_bin = 1
+
+# Character set
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+

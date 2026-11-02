@@ -1,59 +1,62 @@
 # ===================================================================
 # Online Examination System with Timer-Based Threads
-# Production Dockerfile for Render / Container Platforms
-# Multi-stage build with Adoptium Java 21 LTS
+# All-in-One Production Dockerfile for Render Free Tier (₹0 Demo)
+# Runs MySQL 8.4 Server + Spring Boot 3 on Adoptium Java 21 LTS
+# Specially optimized for 512 MB RAM limit
 # ===================================================================
 
 # -------------------------------------------------------------------
-# Stage 1: Build the Application
+# Stage 1: Build Core Module and Web Backend JAR
 # -------------------------------------------------------------------
 FROM eclipse-adoptium:21-jdk-jammy AS builder
 WORKDIR /workspace
 
-# Copy Maven wrapper and root project definition
+# Copy Maven wrapper & root pom
 COPY mvnw mvnw.cmd pom.xml ./
 COPY .mvn .mvn
-
-# Make wrapper executable
 RUN chmod +x ./mvnw
 
-# Copy core library source & database scripts, then build and install core module to local repo
+# Copy core engine source & compile/install core module to local repo
 COPY src src
 COPY database database
 RUN ./mvnw -B clean install -DskipTests
 
-# Copy web backend module and build production executable JAR
+# Copy web backend module and package executable Spring Boot JAR
 COPY web/backend web/backend
 WORKDIR /workspace/web/backend
 RUN ../../mvnw -B clean package -DskipTests
 
 # -------------------------------------------------------------------
-# Stage 2: Minimal Production Runtime
+# Stage 2: Combined Minimal Runtime (Adoptium JRE 21 + MySQL Server)
 # -------------------------------------------------------------------
 FROM eclipse-adoptium:21-jre-jammy
+
+# Install MySQL Server 8 and utilities non-interactively
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends mysql-server mysql-client curl && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Create dedicated non-root application user
-RUN groupadd -r examapp && useradd -r -g examapp examapp
+# Copy application JAR and database scripts
+COPY --from=builder /workspace/web/backend/target/online-examination-web-backend-*.jar /app/app.jar
+COPY database /app/database
 
-# Copy built artifact and database schema for automated migrations
-COPY --from=builder /workspace/web/backend/target/online-examination-web-backend-*.jar app.jar
-COPY database database
+# Copy custom low-memory MySQL configuration
+COPY database/low-memory-my.cnf /etc/mysql/conf.d/low-memory.cnf
 
-# Set directory ownership
-RUN chown -R examapp:examapp /app
+# Copy and set permissions for entrypoint script
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh && \
+    sed -i 's/\r$//' /app/docker-entrypoint.sh
 
-USER examapp
-
-# Render dynamically sets $PORT (defaults to 8080)
+# Render sets $PORT dynamically (defaults to 8080)
 EXPOSE 8080
 
 ENV PORT=8080
-ENV JAVA_OPTS="-Xmx384m -XX:+UseSerialGC -XX:+TieredCompilation -XX:TieredStopAtLevel=1"
 
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD java -cp app.jar -Dserver.port=$PORT org.springframework.boot.loader.launch.JarLauncher --help || exit 0
+HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
+  CMD curl -f http://127.0.0.1:${PORT}/api/health || exit 1
 
-ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -Dserver.port=$PORT -jar app.jar"]
-
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

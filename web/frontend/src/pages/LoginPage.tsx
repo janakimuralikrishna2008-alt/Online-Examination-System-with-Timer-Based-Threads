@@ -72,7 +72,7 @@ export const LoginPage: React.FC = () => {
       } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
         setError('Connection to backend timed out. Please verify the Spring Boot service is responsive.');
       } else {
-        setError('Failed to connect to backend server. Make sure the Spring Boot service is running on http://127.0.0.1:8080.');
+        setError('Failed to connect to backend server. Please verify the backend service is running and accessible.');
       }
     } finally {
       setSubmitting(false);

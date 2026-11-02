@@ -1,10 +1,10 @@
 # ===================================================================
 # Online Examination System with Timer-Based Threads
-# Render Blueprint Specification (render.yaml)
+# Render Blueprint Specification (render.yaml) - All-in-One ₹0 Setup
 # ===================================================================
 services:
   # -----------------------------------------------------------------
-  # 1. Spring Boot REST Backend Service
+  # Spring Boot REST Backend + Embedded MySQL (All-in-One Container)
   # -----------------------------------------------------------------
   - type: web
     name: online-examination-backend
@@ -16,19 +16,9 @@ services:
     envVars:
       - key: PORT
         value: 8080
-      - key: DB_URL
-        sync: false
-        # Example: jdbc:mysql://your-db-host:3306/online_exam_db?useSSL=true&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - key: DB_USER
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://online-examination-system-with-time.vercel.app
       - key: JWT_SECRET
         generateValue: true
       - key: ADMIN_INVITATION_CODE
-        sync: false
-        # Generate or enter your custom administrator invitation code
-      - key: CORS_ALLOWED_ORIGINS
-        sync: false
-        # Example: https://online-examination-system.pages.dev
-
+        generateValue: true
