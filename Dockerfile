@@ -8,7 +8,7 @@
 # -------------------------------------------------------------------
 # Stage 1: Build Core Module and Web Backend JAR
 # -------------------------------------------------------------------
-FROM eclipse-adoptium:21-jdk-jammy AS builder
+FROM eclipse-temurin:21-jdk-jammy AS builder
 WORKDIR /workspace
 
 # Copy Maven wrapper & root pom
@@ -29,7 +29,7 @@ RUN ../../mvnw -B clean package -DskipTests
 # -------------------------------------------------------------------
 # Stage 2: Combined Minimal Runtime (Adoptium JRE 21 + MySQL Server)
 # -------------------------------------------------------------------
-FROM eclipse-adoptium:21-jre-jammy
+FROM eclipse-temurin:21-jre-jammy
 
 # Install MySQL Server 8 and utilities non-interactively
 ENV DEBIAN_FRONTEND=noninteractive
